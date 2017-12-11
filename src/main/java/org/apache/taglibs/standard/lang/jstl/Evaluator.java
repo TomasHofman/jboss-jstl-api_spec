@@ -67,9 +67,7 @@ public class Evaluator
     public String validate(String pAttributeName,
                            String pAttributeValue) {
         try {
-            sEvaluator.setBypassCache(true);
-            sEvaluator.parseExpressionString(pAttributeValue);
-            sEvaluator.setBypassCache(false);
+            sEvaluator.parseExpressionString(pAttributeValue, true);
             return null;
         }
         catch (ELException exc) {
@@ -101,7 +99,8 @@ public class Evaluator
                             pPageContext,
                             pExpectedType,
                             functions,
-                            defaultPrefix);
+                            defaultPrefix,
+                            false);
         }
         catch (ELException exc) {
             throw new JspException
@@ -144,7 +143,7 @@ public class Evaluator
     public static String parseAndRender(String pAttributeValue)
             throws JspException {
         try {
-            return sEvaluator.parseAndRender(pAttributeValue);
+            return sEvaluator.parseAndRender(pAttributeValue, false);
         }
         catch (ELException exc) {
             throw new JspException

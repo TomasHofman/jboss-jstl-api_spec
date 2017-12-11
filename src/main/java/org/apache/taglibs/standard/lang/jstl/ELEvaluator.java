@@ -121,11 +121,6 @@ public class ELEvaluator {
     VariableResolver mResolver;
 
     /**
-     * Flag if the cache should be bypassed *
-     */
-    boolean mBypassCache;
-
-    /**
      * The PageContext *
      */
     PageContext pageContext;
@@ -147,17 +142,6 @@ public class ELEvaluator {
     //-------------------------------------
 
     /**
-     * Enable cache bypass
-     *
-     * @param pBypassCache flag indicating cache should be bypassed
-     */
-    public void setBypassCache(boolean pBypassCache) {
-        mBypassCache = pBypassCache;
-    }
-
-    //-------------------------------------
-
-    /**
      * Evaluates the given expression String
      *
      * @param pExpressionString the expression String to be evaluated
@@ -172,14 +156,16 @@ public class ELEvaluator {
                            Object pContext,
                            Class pExpectedType,
                            Map functions,
-                           String defaultPrefix)
+                           String defaultPrefix,
+                           boolean mBypassCache)
             throws ELException {
         return evaluate(pExpressionString,
                 pContext,
                 pExpectedType,
                 functions,
                 defaultPrefix,
-                sLogger);
+                sLogger,
+                mBypassCache);
     }
 
     //-------------------------------------
@@ -192,7 +178,8 @@ public class ELEvaluator {
                     Class pExpectedType,
                     Map functions,
                     String defaultPrefix,
-                    Logger pLogger)
+                    Logger pLogger,
+                    boolean mBypassCache)
             throws ELException {
         // Check for null expression strings
         if (pExpressionString == null) {
@@ -204,7 +191,7 @@ public class ELEvaluator {
         pageContext = (PageContext) pContext;
 
         // Get the parsed version of the expression string
-        Object parsedValue = parseExpressionString(pExpressionString);
+        Object parsedValue = parseExpressionString(pExpressionString, mBypassCache);
 
         // Evaluate differently based on the parsed type
         if (parsedValue instanceof String) {
@@ -212,7 +199,8 @@ public class ELEvaluator {
             String strValue = (String) parsedValue;
             return convertStaticValueToExpectedType(strValue,
                     pExpectedType,
-                    pLogger);
+                    pLogger,
+                    mBypassCache);
         } else if (parsedValue instanceof Expression) {
             // Evaluate the expression and convert
             Object value =
@@ -249,7 +237,7 @@ public class ELEvaluator {
      * cached form, otherwise parse and cache the value.  Returns either
      * a String, Expression, or ExpressionString.
      */
-    public Object parseExpressionString(String pExpressionString)
+    public Object parseExpressionString(String pExpressionString, boolean mBypassCache)
             throws ELException {
         // See if it's an empty String
         if (pExpressionString.length() == 0) {
@@ -314,7 +302,8 @@ public class ELEvaluator {
      */
     Object convertStaticValueToExpectedType(String pValue,
                                             Class pExpectedType,
-                                            Logger pLogger)
+                                            Logger pLogger,
+                                            boolean mBypassCache)
             throws ELException {
         // See if the value is already of the expected type
         if (pExpectedType == String.class ||
@@ -494,9 +483,9 @@ public class ELEvaluator {
      * Parses the given expression string, then converts it back to a
      * String in its canonical form.  This is used to test parsing.
      */
-    public String parseAndRender(String pExpressionString)
+    public String parseAndRender(String pExpressionString, boolean mBypassCache)
             throws ELException {
-        Object val = parseExpressionString(pExpressionString);
+        Object val = parseExpressionString(pExpressionString, mBypassCache);
         if (val instanceof String) {
             return (String) val;
         } else if (val instanceof Expression) {
